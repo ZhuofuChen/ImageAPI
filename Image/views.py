@@ -1,19 +1,14 @@
-# -*- coding: utf-8 -*-
-import os
-from PIL import Image
 from django.http.response import HttpResponse
-# from Image.models import Image
-# from Image.serializers import Image_List
-from Image.models import Images
-from mongoengine import connect
+from Image.models import Image
 from Image.serializers import Image_List
 from ImageAPI.settings import MEDIA_ROOT
-from ImageInfo.ImageInfo import get_exif_data, get_image_data, filetype, random_name
+from ImageInfo.ImageInfo import get_exif_data, get_image_data, filetype
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.renderers import JSONRenderer
 from rest_framework.decorators import api_view
+import os
 
-connect('images', host='localhost', port=27017)
+
 # Heavy duty JsonResponse
 class JSONResponse(HttpResponse):
     def __init__(self, data, **kwargs):
@@ -27,8 +22,7 @@ def AllImages(request):
 
     # Processing GET requests
     if request.method == 'GET':
-        # all_images = Image.objects.all()
-        all_images = Images.objects.all()
+        all_images = Image.objects.all()
         serializer = Image_List(all_images, many=True)
         return JSONResponse(serializer.data)
 
@@ -38,24 +32,14 @@ def AllImages(request):
         files = request.FILES.getlist('images')
         if files :
             for f in files:
-                # image = Image()
-                image = Images()
-                # try:
-                save_img = Image.open(f)
-                image_name = MEDIA_ROOT+'\\'+"%s.jpg"%random_name()
-                save_img.save(image_name)#保存图片
-                img = open(image_name,'rb')
-                image.image.put(img, content_type = 'image/jpg')
+                image = Image()
+                image.image=f
                 image.save()
-
-                # if filetype(str(image.image)):
-                return HttpResponse("{'state':'ready'}", content_type='application/json')
-                # else:
-                #     image.delete()
-                # return HttpResponse("{'state':'TypeError'}", content_type='application/json')
-                # except:
-                #     return HttpResponse("{'state':'TypeError'}", content_type='application/json')
-
+                if filetype(str(image.image)):
+                    return HttpResponse("{'state':'ready'}", content_type='application/json')
+                else:
+                    image.delete()
+                return HttpResponse("{'state':'TypeError'}", content_type='application/json')
         else:
             return HttpResponse("{'state':'fail'}", content_type='application/json')
 
@@ -63,8 +47,7 @@ def AllImages(request):
 def ImageDetails(request,image_id):
     # Processing GET requests
      if request.method == 'GET':
-        # image = Image.objects.get(id=image_id)
-        image = Images.objects.get(id=image_id)
+        image = Image.objects.get(id=image_id)
         tem_image = get_image_data(str(image.image))
         fileName = MEDIA_ROOT+'\\'+tem_image
         image_data = open(fileName,"rb").read()
@@ -77,8 +60,7 @@ def ImageDetails(request,image_id):
 def ImageId(request,image_id):
     # Processing GET requests
      if request.method == 'GET':
-        # image = Image.objects.get(id=image_id)
-        image = Images.objects.get(id=image_id)
+        image = Image.objects.get(id=image_id)
         image_dirs=str(image.image).replace('/','\\')
         data = get_exif_data(image_dirs)
         return HttpResponse("{'ImageData':%s}"%data,content_type='application/json')
@@ -86,18 +68,13 @@ def ImageId(request,image_id):
     # Processing PUT requests
      if request.method == 'PUT':
         #  Find if ID exists
-        image = Images.objects.get(id=image_id)
-        # image = Image.objects.get(id=image_id)
-        # tem_image = Image()
-        tem_image = Images()
+        image = Image.objects.get(id=image_id)
+        tem_image = Image()
         tem_image.image=image.image
         tem_image.save()
         data=request.data
         files = data.get('images')
         if files and image:
-            # replace
-            image.image=files
-            image.save()
             if filetype(str(image.image)):
                 file = MEDIA_ROOT+'\\'+str(tem_image.image).replace('/','\\')
                 fileName = unicode(file,"utf-8")
