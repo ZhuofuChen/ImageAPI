@@ -48,7 +48,7 @@ django-oauth-plus==2.2.4
 django-oauth2-provider==0.2.6.1
 django-pure-pagination==0.3.0
 django-rest-framework-oauth==0.0.2
-djangorestframework==3.7.1
+djangorestframework==3.11.2
 docutils==0.14
 entrypoints==0.2.3
 enum34==1.1.6
