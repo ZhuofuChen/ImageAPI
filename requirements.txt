@@ -43,7 +43,7 @@ datashape==0.5.4
 decorator==4.1.2
 distlib==0.2.5
 distributed==1.18.3
-Django==1.11.6
+Django==2.2.24
 django-oauth-plus==2.2.4
 django-oauth2-provider==0.2.6.1
 django-pure-pagination==0.3.0
